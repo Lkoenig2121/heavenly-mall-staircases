@@ -315,7 +315,7 @@ export default function HotTopicInterior({ unlocked, onOpenShop }: HotTopicInter
   );
 }
 
-export function clampToWalkable(pos: THREE.Vector3) {
+export function clampMallGround(pos: THREE.Vector3) {
   const inInterior = pos.z < HT.thresholdZ && pos.x >= HT.minX && pos.x <= HT.maxX;
   if (inInterior) {
     pos.x = THREE.MathUtils.clamp(pos.x, HT.minX + 0.5, HT.maxX - 0.5);

@@ -5,9 +5,19 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PointerLockControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import PlayerAvatar from "./PlayerAvatar";
-import HotTopicInterior, { clampToWalkable } from "./HotTopicInterior";
+import HotTopicInterior, { clampMallGround } from "./HotTopicInterior";
+import { getFloorY, clampUpperLevel } from "@/lib/upper-level";
 import { STORES } from "@/lib/store-data";
 import type { ClothingSlot, StoreId } from "@/lib/types";
+import {
+  STAIRS,
+  STAIR_COUNT,
+  STAIR_STEP_D,
+  STAIR_STEP_H,
+  STAIR_WIDTH,
+  UPPER_FLOOR_Y,
+  PLATFORM_SIZE,
+} from "@/lib/upper-level";
 
 const MOVE_SPEED = 8;
 const EYE_HEIGHT = 1.7;
@@ -189,15 +199,20 @@ function PlayerController({
       player.rotation.y = Math.atan2(direction.x, direction.z);
     }
 
-    player.position.y = 0;
-    clampToWalkable(player.position);
+    player.position.y = getFloorY(player.position.x, player.position.z);
+    if (player.position.y > 0) {
+      clampUpperLevel(player.position);
+    } else {
+      clampMallGround(player.position);
+    }
 
     if (viewMode === "first") {
-      camera.position.set(player.position.x, EYE_HEIGHT, player.position.z);
+      camera.position.set(player.position.x, player.position.y + EYE_HEIGHT, player.position.z);
     } else {
       const dist = THIRD_PERSON_DISTANCE * Math.cos(orbitPitch.current);
       const camX = player.position.x + Math.sin(orbitYaw.current) * dist;
-      const camY = player.position.y + THIRD_PERSON_HEIGHT + Math.sin(orbitPitch.current) * THIRD_PERSON_DISTANCE;
+      const camY =
+        player.position.y + THIRD_PERSON_HEIGHT + Math.sin(orbitPitch.current) * THIRD_PERSON_DISTANCE;
       const camZ = player.position.z + Math.cos(orbitYaw.current) * dist;
 
       camera.position.set(camX, camY, camZ);
@@ -333,43 +348,53 @@ function MallStairs({
   position: [number, number, number];
   rotation?: number;
 }) {
-  const steps = 10;
-  const stepWidth = 3.5;
-  const stepDepth = 0.38;
-  const stepHeight = 0.18;
+  const stairRun = STAIR_COUNT * STAIR_STEP_D;
+  const platformCenterZ = stairRun + PLATFORM_SIZE / 2;
+  const totalRise = STAIR_COUNT * STAIR_STEP_H;
 
   return (
     <group position={position} rotation={[0, rotation, 0]}>
-      {Array.from({ length: steps }).map((_, i) => (
-        <mesh key={i} position={[0, stepHeight * (i + 0.5), stepDepth * i]}>
-          <boxGeometry args={[stepWidth, stepHeight, stepDepth]} />
+      {Array.from({ length: STAIR_COUNT }).map((_, i) => (
+        <mesh key={i} position={[0, STAIR_STEP_H * (i + 0.5), STAIR_STEP_D * i]}>
+          <boxGeometry args={[STAIR_WIDTH, STAIR_STEP_H, STAIR_STEP_D]} />
           <meshStandardMaterial color={i % 2 === 0 ? "#e0d2c0" : "#f0e4d4"} />
         </mesh>
       ))}
-      {/* Upper landing */}
-      <mesh position={[0, stepHeight * steps + 0.1, stepDepth * steps + 0.8]}>
-        <boxGeometry args={[stepWidth, 0.2, 2.2]} />
+
+      {/* 10×10 upper pathway */}
+      <mesh position={[0, UPPER_FLOOR_Y - 0.05, platformCenterZ]}>
+        <boxGeometry args={[PLATFORM_SIZE, 0.1, PLATFORM_SIZE]} />
         <meshStandardMaterial color="#f0e4d4" />
       </mesh>
-      {/* Left railing */}
-      <mesh position={[-stepWidth / 2 + 0.08, stepHeight * steps * 0.55, stepDepth * steps * 0.45]}>
-        <boxGeometry args={[0.08, stepHeight * steps + 0.6, stepDepth * steps + 1.2]} />
+      {/* Platform edge railing */}
+      <mesh position={[0, UPPER_FLOOR_Y + 0.45, platformCenterZ - PLATFORM_SIZE / 2]}>
+        <boxGeometry args={[PLATFORM_SIZE, 0.08, 0.08]} />
+        <meshStandardMaterial color="#c0a882" metalness={0.4} />
+      </mesh>
+      <mesh position={[0, UPPER_FLOOR_Y + 0.45, platformCenterZ + PLATFORM_SIZE / 2]}>
+        <boxGeometry args={[PLATFORM_SIZE, 0.08, 0.08]} />
+        <meshStandardMaterial color="#c0a882" metalness={0.4} />
+      </mesh>
+      <mesh position={[PLATFORM_SIZE / 2, UPPER_FLOOR_Y + 0.45, platformCenterZ]}>
+        <boxGeometry args={[0.08, 0.08, PLATFORM_SIZE]} />
+        <meshStandardMaterial color="#c0a882" metalness={0.4} />
+      </mesh>
+      <mesh position={[-PLATFORM_SIZE / 2, UPPER_FLOOR_Y + 0.45, platformCenterZ]}>
+        <boxGeometry args={[0.08, 0.08, PLATFORM_SIZE]} />
+        <meshStandardMaterial color="#c0a882" metalness={0.4} />
+      </mesh>
+
+      {/* Stair railings */}
+      <mesh position={[-STAIR_WIDTH / 2 + 0.08, totalRise * 0.5, stairRun * 0.45]}>
+        <boxGeometry args={[0.08, totalRise + 0.6, stairRun + 1.2]} />
         <meshStandardMaterial color="#c0a882" metalness={0.4} roughness={0.4} />
       </mesh>
-      {/* Right railing */}
-      <mesh position={[stepWidth / 2 - 0.08, stepHeight * steps * 0.55, stepDepth * steps * 0.45]}>
-        <boxGeometry args={[0.08, stepHeight * steps + 0.6, stepDepth * steps + 1.2]} />
+      <mesh position={[STAIR_WIDTH / 2 - 0.08, totalRise * 0.5, stairRun * 0.45]}>
+        <boxGeometry args={[0.08, totalRise + 0.6, stairRun + 1.2]} />
         <meshStandardMaterial color="#c0a882" metalness={0.4} roughness={0.4} />
       </mesh>
-      {/* Handrail top */}
-      <mesh
-        position={[0, stepHeight * steps + 0.55, stepDepth * steps * 0.45]}
-        rotation={[Math.atan2(stepHeight * steps, stepDepth * steps), 0, 0]}
-      >
-        <boxGeometry args={[stepWidth - 0.1, 0.07, stepDepth * steps + 1.4]} />
-        <meshStandardMaterial color="#b8956a" metalness={0.5} roughness={0.35} />
-      </mesh>
-      <StoreLabel position={[0, stepHeight * steps + 1.4, stepDepth * steps + 1.2]} className="text-xs text-zinc-600">
+
+      <StoreLabel position={[0, UPPER_FLOOR_Y + 0.8, platformCenterZ]} className="text-xs text-zinc-600">
         Upper Level
       </StoreLabel>
     </group>
@@ -404,7 +429,7 @@ function MallEnvironment() {
         <meshStandardMaterial color="#f0e4d4" />
       </mesh>
 
-      <mesh position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 8.5, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[40, 40]} />
         <meshStandardMaterial color="#ffffff" side={THREE.BackSide} />
       </mesh>
@@ -426,9 +451,10 @@ function MallEnvironment() {
         </mesh>
       ))}
 
-      {/* Mall stairs to upper level */}
-      <MallStairs position={[-7, 0, 7]} rotation={-Math.PI / 4} />
-      <MallStairs position={[7, 0, -7]} rotation={Math.PI * 0.75} />
+      {/* Mall stairs to upper level (top of walls) */}
+      {STAIRS.map((stair, i) => (
+        <MallStairs key={i} position={stair.position} rotation={stair.rotation} />
+      ))}
 
       <StoreLabel position={[0, 5.4, -8]} className="text-lg font-bold text-pink-500 tracking-widest">
         SUNSET GALLERIA
