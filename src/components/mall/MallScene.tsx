@@ -6,7 +6,8 @@ import { PointerLockControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import PlayerAvatar from "./PlayerAvatar";
 import HotTopicInterior, { clampMallGround } from "./HotTopicInterior";
-import { getFloorY, clampUpperLevel } from "@/lib/upper-level";
+import UpperLevelMall from "./UpperLevelMall";
+import { applyPlayerMove, clampUpperLevel } from "@/lib/upper-level";
 import { STORES } from "@/lib/store-data";
 import type { ClothingSlot, StoreId } from "@/lib/types";
 import {
@@ -195,11 +196,29 @@ function PlayerController({
 
     if (direction.lengthSq() > 0) {
       direction.normalize().multiplyScalar(MOVE_SPEED * delta);
-      player.position.add(direction);
+      const moved = applyPlayerMove(
+        player.position.x,
+        player.position.z,
+        player.position.y,
+        direction.x,
+        direction.z,
+      );
+      player.position.x = moved.x;
+      player.position.z = moved.z;
+      player.position.y = moved.y;
       player.rotation.y = Math.atan2(direction.x, direction.z);
+    } else {
+      // Re-sync height without allowing drops off the upper level
+      const held = applyPlayerMove(
+        player.position.x,
+        player.position.z,
+        player.position.y,
+        0,
+        0,
+      );
+      player.position.y = held.y;
     }
 
-    player.position.y = getFloorY(player.position.x, player.position.z);
     if (player.position.y > 0) {
       clampUpperLevel(player.position);
     } else {
@@ -406,7 +425,7 @@ function MallEnvironment() {
     <>
       <ambientLight intensity={0.75} />
       <directionalLight position={[5, 10, 5]} intensity={1} color="#fff8f0" />
-      <pointLight position={[0, 8, 0]} intensity={0.6} color="#ffffff" />
+      <pointLight position={[0, 7, 0]} intensity={0.5} color="#fff8f0" distance={30} />
       <pointLight position={[0, 5, -30]} intensity={0.8} color="#ff8866" distance={25} />
       <pointLight position={[-9, 4, -40]} intensity={0.5} color="#ffffff" distance={15} />
 
@@ -479,7 +498,8 @@ function SceneContent({ unlockedStores, onEnterStore, onContextLost, viewMode, e
         unlocked={hotTopicUnlocked}
         onOpenShop={() => onEnterStore("hottopic")}
       />
-      {STORES.filter((s) => !s.interiorPortal).map((store) => (
+      <UpperLevelMall unlockedStores={unlockedStores} onEnterStore={onEnterStore} />
+      {STORES.filter((s) => !s.interiorPortal && !s.upperLevel).map((store) => (
         <StoreFront
           key={store.id}
           store={store}

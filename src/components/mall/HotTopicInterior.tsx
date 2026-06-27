@@ -316,12 +316,19 @@ export default function HotTopicInterior({ unlocked, onOpenShop }: HotTopicInter
 }
 
 export function clampMallGround(pos: THREE.Vector3) {
-  const inInterior = pos.z < HT.thresholdZ && pos.x >= HT.minX && pos.x <= HT.maxX;
-  if (inInterior) {
+  const inHotTopic =
+    pos.x >= HT.minX &&
+    pos.x <= HT.maxX &&
+    pos.z <= HT.entranceZ + 0.5 &&
+    pos.z >= HT.backZ + 1.5;
+
+  if (inHotTopic) {
     pos.x = THREE.MathUtils.clamp(pos.x, HT.minX + 0.5, HT.maxX - 0.5);
     pos.z = THREE.MathUtils.clamp(pos.z, HT.backZ + 1.5, HT.entranceZ + 0.5);
-  } else {
-    pos.x = THREE.MathUtils.clamp(pos.x, -18, 18);
-    pos.z = THREE.MathUtils.clamp(pos.z, -18, 18);
+    return;
   }
+
+  // Full first-floor mall — north opens into the Hot Topic door corridor
+  pos.x = THREE.MathUtils.clamp(pos.x, -18, 18);
+  pos.z = THREE.MathUtils.clamp(pos.z, -18, 18);
 }

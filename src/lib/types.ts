@@ -5,7 +5,11 @@ export type StoreId =
   | "food"
   | "electronics"
   | "books"
-  | "hottopic";
+  | "hottopic"
+  | "kiosk"
+  | "cellular"
+  | "smoothie"
+  | "watches";
 
 export type ClothingSlot = "head" | "torso" | "legs" | "feet" | "accessory";
 
@@ -57,6 +61,8 @@ export interface StoreConfig {
   miniGameType?: "arcade" | "rhythm";
   /** Walk-through interior behind a mall wall (no corridor storefront) */
   interiorPortal?: boolean;
+  /** Second-floor shop on the perimeter walkway */
+  upperLevel?: boolean;
 }
 
 export interface GameState {

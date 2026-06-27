@@ -81,6 +81,54 @@ export const STORES: StoreConfig[] = [
     hasMiniGame: false,
     interiorPortal: true,
   },
+  {
+    id: "kiosk",
+    name: "Mall Magic Kiosk",
+    tagline: "As seen on TV. Regret included.",
+    emoji: "🎁",
+    color: "#e91e8c",
+    unlockStamps: 1,
+    position: [0, 5.9, -17],
+    rotation: 0,
+    hasMiniGame: false,
+    upperLevel: true,
+  },
+  {
+    id: "cellular",
+    name: "Talk & Text",
+    tagline: "Free phone with 2-year soul contract.",
+    emoji: "📱",
+    color: "#0066cc",
+    unlockStamps: 2,
+    position: [17, 5.9, 0],
+    rotation: -Math.PI / 2,
+    hasMiniGame: false,
+    upperLevel: true,
+  },
+  {
+    id: "smoothie",
+    name: "Boost Juice Loft",
+    tagline: "Smoothies with mall air view.",
+    emoji: "🧋",
+    color: "#7cb342",
+    unlockStamps: 3,
+    position: [0, 5.9, 17],
+    rotation: Math.PI,
+    hasMiniGame: false,
+    upperLevel: true,
+  },
+  {
+    id: "watches",
+    name: "Time Zone",
+    tagline: "You're already late.",
+    emoji: "⌚",
+    color: "#b8860b",
+    unlockStamps: 4,
+    position: [-17, 5.9, 0],
+    rotation: Math.PI / 2,
+    hasMiniGame: false,
+    upperLevel: true,
+  },
 ];
 
 export const CLOTHING: ClothingItem[] = [
@@ -264,6 +312,46 @@ export const CLOTHING: ClothingItem[] = [
     emoji: "⛓️",
     description: "Mall security pretends not to notice.",
   },
+  {
+    id: "kiosk-hat",
+    name: "Infomercial Fedora",
+    storeId: "kiosk",
+    slot: "head",
+    price: 35,
+    color: "#e91e8c",
+    emoji: "🎩",
+    description: "Guaranteed to turn heads. Not in a good way.",
+  },
+  {
+    id: "cellular-visor",
+    name: "Bluetooth Visor",
+    storeId: "cellular",
+    slot: "head",
+    price: 50,
+    color: "#0066cc",
+    emoji: "🕶️",
+    description: "Hands-free. Dignity sold separately.",
+  },
+  {
+    id: "smoothie-tank",
+    name: "Juice Bar Tank",
+    storeId: "smoothie",
+    slot: "torso",
+    price: 40,
+    color: "#7cb342",
+    emoji: "🎽",
+    description: "Stains look like passion.",
+  },
+  {
+    id: "watch-bracelet",
+    name: "Mall Watch Band",
+    storeId: "watches",
+    slot: "accessory",
+    price: 65,
+    color: "#b8860b",
+    emoji: "⌚",
+    description: "Always exactly 2001 o'clock.",
+  },
 ];
 
 export const COLLECTIBLES: Collectible[] = [
@@ -281,6 +369,10 @@ export const COLLECTIBLES: Collectible[] = [
   { id: "novel", name: "Mall Mystery Novel", storeId: "books", emoji: "📖", description: "The villain was the food court.", hidden: true },
   { id: "ht-pin", name: "Enamel Band Pin", storeId: "hottopic", emoji: "📌", description: "Pins perfectly on a messenger bag." },
   { id: "ht-vinyl", name: "Mystery Vinyl", storeId: "hottopic", emoji: "💿", description: "Sounds like static. You love it.", hidden: true },
+  { id: "kiosk-snake", name: "Rubber Mall Snake", storeId: "kiosk", emoji: "🐍", description: "It doesn't do anything." },
+  { id: "cellular-case", name: "Bedazzled Phone Case", storeId: "cellular", emoji: "💎", description: "So many rhinestones." },
+  { id: "smoothie-cup", name: "Reusable Loft Cup", storeId: "smoothie", emoji: "🥤", description: "Still smells like mango." },
+  { id: "watch-ticket", name: "Expired Watch Battery", storeId: "watches", emoji: "🔋", description: "Time is a flat circle.", hidden: true },
 ];
 
 export const COUPONS: Coupon[] = [
@@ -291,6 +383,10 @@ export const COUPONS: Coupon[] = [
   { id: "tech-coupon", storeId: "electronics", discount: 30, code: "BEEP30", hint: "Inside the demo Discman box." },
   { id: "book-coupon", storeId: "books", discount: 20, code: "READ20", hint: "Used as a bookmark in aisle 3." },
   { id: "ht-coupon", storeId: "hottopic", discount: 20, code: "GOTH20", hint: "Tucked behind the left wall amp stack." },
+  { id: "kiosk-coupon", storeId: "kiosk", discount: 15, code: "ASOTV15", hint: "Under the spinning display." },
+  { id: "cellular-coupon", storeId: "cellular", discount: 25, code: "TALK25", hint: "Inside the demo flip phone." },
+  { id: "smoothie-coupon", storeId: "smoothie", discount: 10, code: "BOOST10", hint: "Taped to a blender." },
+  { id: "watch-coupon", storeId: "watches", discount: 20, code: "TIME20", hint: "Behind the rotating watch stand." },
 ];
 
 export const SLOT_LABELS: Record<string, string> = {
