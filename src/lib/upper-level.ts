@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { clampUpperWithInteriors, isInUpperInterior } from "./store-interiors";
 
 export const WALL_TOP = 6;
 export const UPPER_FLOOR_Y = 5.9;
@@ -78,6 +79,7 @@ export function isStairVolume(x: number, z: number): boolean {
 }
 
 export function isUpperWalkable(x: number, z: number): boolean {
+  if (isInUpperInterior(x, z)) return true;
   if (onPerimeterWalkway(x, z)) return true;
   return STAIRS.some((s) => inPlatform(x, z, s));
 }
@@ -143,6 +145,8 @@ function pushOutOfInnerHole(pos: THREE.Vector3) {
 }
 
 export function clampUpperLevel(pos: THREE.Vector3) {
+  if (clampUpperWithInteriors(pos)) return;
+
   if (onPerimeterWalkway(pos.x, pos.z)) {
     pos.x = THREE.MathUtils.clamp(pos.x, -PERIMETER_OUTER, PERIMETER_OUTER);
     pos.z = THREE.MathUtils.clamp(pos.z, -PERIMETER_OUTER, PERIMETER_OUTER);

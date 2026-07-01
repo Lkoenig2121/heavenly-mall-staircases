@@ -12,6 +12,7 @@ export const STORES: StoreConfig[] = [
     rotation: Math.PI / 2,
     hasMiniGame: true,
     miniGameType: "arcade",
+    interiorPortal: true,
   },
   {
     id: "music",
@@ -24,6 +25,7 @@ export const STORES: StoreConfig[] = [
     rotation: -Math.PI / 2,
     hasMiniGame: true,
     miniGameType: "rhythm",
+    interiorPortal: true,
   },
   {
     id: "toys",
@@ -35,6 +37,7 @@ export const STORES: StoreConfig[] = [
     position: [0, 0, -12],
     rotation: 0,
     hasMiniGame: false,
+    interiorPortal: true,
   },
   {
     id: "food",
@@ -46,6 +49,7 @@ export const STORES: StoreConfig[] = [
     position: [0, 0, 12],
     rotation: Math.PI,
     hasMiniGame: false,
+    interiorPortal: true,
   },
   {
     id: "electronics",
@@ -57,6 +61,7 @@ export const STORES: StoreConfig[] = [
     position: [-12, 0, -12],
     rotation: Math.PI / 4,
     hasMiniGame: false,
+    interiorPortal: true,
   },
   {
     id: "books",
@@ -68,6 +73,7 @@ export const STORES: StoreConfig[] = [
     position: [12, 0, 12],
     rotation: -Math.PI / 4,
     hasMiniGame: false,
+    interiorPortal: true,
   },
   {
     id: "hottopic",
@@ -92,6 +98,7 @@ export const STORES: StoreConfig[] = [
     rotation: 0,
     hasMiniGame: false,
     upperLevel: true,
+    interiorPortal: true,
   },
   {
     id: "cellular",
@@ -104,6 +111,7 @@ export const STORES: StoreConfig[] = [
     rotation: -Math.PI / 2,
     hasMiniGame: false,
     upperLevel: true,
+    interiorPortal: true,
   },
   {
     id: "smoothie",
@@ -116,6 +124,7 @@ export const STORES: StoreConfig[] = [
     rotation: Math.PI,
     hasMiniGame: false,
     upperLevel: true,
+    interiorPortal: true,
   },
   {
     id: "watches",
@@ -128,6 +137,7 @@ export const STORES: StoreConfig[] = [
     rotation: Math.PI / 2,
     hasMiniGame: false,
     upperLevel: true,
+    interiorPortal: true,
   },
 ];
 

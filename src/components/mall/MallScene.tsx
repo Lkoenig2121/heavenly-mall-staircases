@@ -5,10 +5,10 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PointerLockControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import PlayerAvatar from "./PlayerAvatar";
-import HotTopicInterior, { clampMallGround } from "./HotTopicInterior";
+import StoreInterior from "./StoreInterior";
 import UpperLevelMall from "./UpperLevelMall";
+import { clampMallGround, GROUND_INTERIORS } from "@/lib/store-interiors";
 import { applyPlayerMove, clampUpperLevel } from "@/lib/upper-level";
-import { STORES } from "@/lib/store-data";
 import type { ClothingSlot, StoreId } from "@/lib/types";
 import {
   STAIRS,
@@ -27,14 +27,6 @@ const THIRD_PERSON_HEIGHT = 1.6;
 const ORBIT_SENSITIVITY = 0.005;
 
 export type ViewMode = "first" | "third";
-
-function facadeColor(hex: string, unlocked: boolean) {
-  const color = new THREE.Color(hex);
-  if (!unlocked) {
-    color.lerp(new THREE.Color("#f5f0ea"), 0.45);
-  }
-  return color;
-}
 
 interface MallSceneProps {
   unlockedStores: StoreId[];
@@ -270,96 +262,6 @@ function StoreLabel({
   );
 }
 
-function StoreFront({
-  store,
-  unlocked,
-  onEnter,
-}: {
-  store: (typeof STORES)[0];
-  unlocked: boolean;
-  onEnter: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const bodyColor = facadeColor(store.color, unlocked);
-
-  return (
-    <group position={store.position} rotation={[0, store.rotation, 0]}>
-      {/* Main facade */}
-      <mesh position={[0, 2.5, 0]}>
-        <boxGeometry args={[6, 5, 0.3]} />
-        <meshStandardMaterial
-          color={bodyColor}
-          emissive={store.color}
-          emissiveIntensity={unlocked ? (hovered ? 0.25 : 0.12) : 0.04}
-        />
-      </mesh>
-      {/* Display windows */}
-      <mesh position={[-1.5, 2.8, 0.2]}>
-        <boxGeometry args={[2.2, 2.2, 0.08]} />
-        <meshStandardMaterial color="#b8dff5" metalness={0.1} roughness={0.2} transparent opacity={0.85} />
-      </mesh>
-      <mesh position={[1.5, 2.8, 0.2]}>
-        <boxGeometry args={[2.2, 2.2, 0.08]} />
-        <meshStandardMaterial color="#b8dff5" metalness={0.1} roughness={0.2} transparent opacity={0.85} />
-      </mesh>
-      {/* Awning */}
-      <mesh position={[0, 4.35, 0.45]} rotation={[0.15, 0, 0]}>
-        <boxGeometry args={[5.5, 0.15, 1.2]} />
-        <meshStandardMaterial color={store.color} emissive={store.color} emissiveIntensity={0.15} />
-      </mesh>
-      {/* Awning stripes */}
-      {[-1.8, -0.9, 0, 0.9, 1.8].map((x, i) => (
-        <mesh key={i} position={[x, 4.28, 0.55]} rotation={[0.15, 0, 0]}>
-          <boxGeometry args={[0.35, 0.16, 1.1]} />
-          <meshStandardMaterial color={i % 2 === 0 ? "#fff" : store.color} />
-        </mesh>
-      ))}
-      {/* Door */}
-      <mesh
-        position={[0, 1.2, 0.22]}
-        onPointerOver={() => unlocked && setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (unlocked) onEnter();
-        }}
-      >
-        <boxGeometry args={[2, 2.4, 0.1]} />
-        <meshStandardMaterial
-          color={unlocked ? (hovered ? "#fff8f0" : "#f0e8dc") : "#c9bfb3"}
-          emissive={unlocked ? "#ffe4c4" : "#000000"}
-          emissiveIntensity={unlocked && hovered ? 0.15 : 0}
-        />
-      </mesh>
-      {!unlocked && (
-        <mesh position={[0, 1.2, 0.3]}>
-          <boxGeometry args={[2.1, 2.5, 0.04]} />
-          <meshStandardMaterial color="#b8a99a" transparent opacity={0.7} />
-        </mesh>
-      )}
-
-      <StoreLabel position={[0, 4.85, 0.5]} className="text-sm font-bold text-zinc-800">
-        <span className="mr-1">{store.emoji}</span>
-        {store.name}
-      </StoreLabel>
-
-      {!unlocked && (
-        <StoreLabel position={[0, 3.5, 0.45]} className="text-xs font-semibold text-red-600">
-          CLOSED — {store.unlockStamps} stamps needed
-        </StoreLabel>
-      )}
-
-      {hovered && unlocked && (
-        <Html position={[0, 1.2, 0.65]} center distanceFactor={10}>
-          <div className="rounded bg-black/80 px-3 py-1 text-xs text-white whitespace-nowrap">
-            Click to enter
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-}
-
 function MallStairs({
   position,
   rotation = 0,
@@ -438,7 +340,7 @@ function MallEnvironment() {
         <boxGeometry args={[40, 6, 0.5]} />
         <meshStandardMaterial color="#f0e4d4" />
       </mesh>
-      {/* Back wall opening is handled by HotTopicInterior */}
+      {/* Store doorways are handled by StoreInterior components */}
       <mesh position={[-20, 3, 0]}>
         <boxGeometry args={[0.5, 6, 40]} />
         <meshStandardMaterial color="#f0e4d4" />
@@ -486,27 +388,21 @@ function MallEnvironment() {
 }
 
 function SceneContent({ unlockedStores, onEnterStore, onContextLost, viewMode, equipped }: MallSceneProps) {
-  const hotTopicUnlocked = unlockedStores.includes("hottopic");
-
   return (
     <>
       <color attach="background" args={["#ffffff"]} />
       <fog attach="fog" args={["#ffffff", 25, 65]} />
       <ContextGuard onContextLost={onContextLost} />
       <MallEnvironment />
-      <HotTopicInterior
-        unlocked={hotTopicUnlocked}
-        onOpenShop={() => onEnterStore("hottopic")}
-      />
-      <UpperLevelMall unlockedStores={unlockedStores} onEnterStore={onEnterStore} />
-      {STORES.filter((s) => !s.interiorPortal && !s.upperLevel).map((store) => (
-        <StoreFront
-          key={store.id}
-          store={store}
-          unlocked={unlockedStores.includes(store.id)}
-          onEnter={() => onEnterStore(store.id)}
+      {GROUND_INTERIORS.map((bounds) => (
+        <StoreInterior
+          key={bounds.storeId}
+          bounds={bounds}
+          unlocked={unlockedStores.includes(bounds.storeId)}
+          onOpenShop={() => onEnterStore(bounds.storeId)}
         />
       ))}
+      <UpperLevelMall unlockedStores={unlockedStores} onEnterStore={onEnterStore} />
       <PlayerController viewMode={viewMode} equipped={equipped} />
     </>
   );
